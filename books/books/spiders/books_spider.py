@@ -4,10 +4,18 @@ from typing import Union
 import scrapy
 from scrapy import Selector
 from scrapy.http import Response
+from selenium import webdriver
+from twisted.internet.defer import Deferred
+
+
 class BooksSpider(scrapy.Spider):
     name = "books"
     allowed_domains = ["https://books.toscrape.com/"]
     start_urls = ["https://books.toscrape.com"]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.driver = webdriver.Chrome()
 
     def _parse_and_page(self, active_url: str) -> dict:
         self.driver.get(active_url)
