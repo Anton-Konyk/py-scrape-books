@@ -17,6 +17,10 @@ class BooksSpider(scrapy.Spider):
         super().__init__(*args, **kwargs)
         self.driver = webdriver.Chrome()
 
+    def close(self, reason: str) -> Union[Deferred, None]:
+        self.driver.close()
+        return self.close(reason)
+
     def _parse_and_page(self, active_url: str) -> dict:
         self.driver.get(active_url)
 
