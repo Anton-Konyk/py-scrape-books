@@ -22,3 +22,9 @@ class BooksSpider(scrapy.Spider):
             "upc": response.css("table.table-striped tr:nth-child(1) td::text").get()
         }
 
+    def parse(self, response: Response, **kwargs):
+        for li in response.css("ol.row li"):
+            relative_url = li.css("a::attr(href)").get()
+            full_url = urljoin(start_urls, relative_url)
+
+            yield {_parse_and_page(response, full_url)}
