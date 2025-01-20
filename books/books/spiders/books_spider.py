@@ -29,9 +29,17 @@ class BooksSpider(scrapy.Spider):
                 get()
         }
 
-    def parse(self, response: Response, **kwargs):
-        for li in response.css("ol.row li"):
-            relative_url = li.css("a::attr(href)").get()
-            full_url = urljoin(start_urls, relative_url)
+    def parse(self, response: Response, **kwargs) -> None:
+        current_page = response.css("ol.row li")
+        next_page = response.css(".next").css("a::attr(href)").get()
+        full_next_page = response.urljoin(next_page)
+        print(f"Next page: {full_next_page}")
 
-            yield {_parse_and_page(response, full_url)}
+        for li in current_page:
+            relative_url = li.css("a::attr(href)").get()
+            book_url = response.urljoin(relative_url)
+
+            yield scrapy.Request(book_url, callback=self.parse_end_page)
+
+        if next_page is not None:
+            yield scrapy.Request(full_next_page, callback=self.parse)
