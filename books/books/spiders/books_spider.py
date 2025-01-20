@@ -1,11 +1,5 @@
-from pathlib import Path
-from typing import Union
-
 import scrapy
-from scrapy import Selector
 from scrapy.http import Response
-from selenium import webdriver
-from twisted.internet.defer import Deferred
 
 
 class BooksSpider(scrapy.Spider):
@@ -13,25 +7,26 @@ class BooksSpider(scrapy.Spider):
     allowed_domains = ["https://books.toscrape.com/"]
     start_urls = ["https://books.toscrape.com"]
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.driver = webdriver.Chrome()
-
-    def close(self, reason: str) -> Union[Deferred, None]:
-        self.driver.close()
-        return self.close(reason)
-
-    def _parse_and_page(self, active_url: str) -> dict:
-        self.driver.get(active_url)
+    def parse_end_page(self, response: Response) -> dict:
 
         return {
-            "title": response.css("div.product_main h1::text").get(),
-            "price": response.css(".price_color::text").get().replace("£", ""),
-            "amount_in_stock": response.css("p.instock.availability').re_first(r'\((\d+) available\)"),
-            "rating": response.css("p.star-rating::attr(class)").get().split()[-1],
-            "category": response.css("ul.breadcrumb li:nth-of-type(3) a::text").get(),
-            "description": response.css("#product_description h2::text").get(),
-            "upc": response.css("table.table-striped tr:nth-child(1) td::text").get()
+            "title":
+                response.css("div.product_main h1::text").get(),
+            "price":
+                response.css(".price_color::text").get().replace("£", ""),
+            "amount_in_stock":
+                response.css("p.instock.availability").
+                re_first(r"\((\d+) available\)"),
+            "rating":
+                response.css("p.star-rating::attr(class)").get().split()[-1],
+            "category":
+                response.css("ul.breadcrumb li:nth-of-type(3) a::text").
+                get(),
+            "description":
+                response.css("#product_description + p::text").get(),
+            "upc":
+                response.css("table.table-striped tr:nth-child(1) td::text").
+                get()
         }
 
     def parse(self, response: Response, **kwargs):
